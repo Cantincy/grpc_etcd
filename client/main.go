@@ -24,32 +24,41 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	etcdDiscovery.WatchService("/hello")
+
+	err = etcdDiscovery.ServiceDiscovery("/hello")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer etcdDiscovery.Close()
 
-	for {
-		time.Sleep(time.Second * 2)
-		serviceAddr, err := etcdDiscovery.GetService(config.ServiceName)
+	var helloID uint64
 
+	for {
+		helloID++
+
+		serviceAddr, err := etcdDiscovery.GetService(config.ServiceName)
 		conn, err := grpc.Dial(serviceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		cli := service.NewHelloServiceClient(conn)
+
 		req := &service.HelloRequest{
 			Hello: &service.Hello{
-				HelloID:  1,
+				HelloID:  helloID,
 				Msg:      "Hello from Client",
 				SendTime: time.Now().Format("2006-01-02 15:04:05"),
 			},
 		}
+
 		resp, err := cli.SayHello(context.Background(), req)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		log.Printf("%+v", resp)
 		conn.Close()
+		time.Sleep(time.Second * 2)
 	}
 }

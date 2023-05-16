@@ -16,7 +16,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = etcdRegister.RegisterService(config.ServiceName, config.ServiceAddr, 30)
+
+	err = etcdRegister.ServiceRegister(config.ServiceName, config.ServiceAddr, 30)
 	if err != nil {
 		log.Fatal(err)
 	}
